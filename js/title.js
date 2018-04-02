@@ -6,7 +6,7 @@ GAME.Title.titleFontStyle = {};
 GAME.Title.tiltFontStyle = {};
 GAME.Title.fontColor = 0x000000;
 GAME.Title.hamburgerColor = 0x7f8c8d;
-GAME.Title.buttonColor = 0xfbf298;
+GAME.Title.buttonColor = 0xf2e452;
 GAME.Title.buttonBorderColor = 0x34495e;
 GAME.Title.fontFamily = 'Lucida Console';
 GAME.Title.fontSize = 46;
@@ -43,10 +43,10 @@ GAME.Title.init = function() {
 	stage.addChild(GAME.Title.letterD);
 	stage.addChild(GAME.Title.letterE);
 	stage.addChild(GAME.Title.letterR);
-	if(!isMobile) { 
-		GAME.Title.useArrowText = new PIXI.Text('[tilt with arrow keys]', GAME.Title.tiltFontStyle);
-		stage.addChild(GAME.Title.useArrowText); 
-	}
+	// if(!isMobile) { 
+	// 	GAME.Title.useArrowText = new PIXI.Text('[tilt with arrow keys]', GAME.Title.tiltFontStyle);
+	// 	stage.addChild(GAME.Title.useArrowText); 
+	// }
 	GAME.Title.hamburgerGraphic = new PIXI.Graphics();
 	stage.addChild(GAME.Title.hamburgerGraphic);
 	GAME.Title.draw();

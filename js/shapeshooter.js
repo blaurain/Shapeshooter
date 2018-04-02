@@ -4,13 +4,15 @@ var stage = new PIXI.Container();
 
 // create a renderer instance
 // var mainCanvas = document.getElementById('mainCanvas');
+var backgroundCol = 0x428bca;
+var backgroundColFade = 0x3a6f9c;
 var rendererOptions = {
   antialiasing: false,
   transparent: false,
   resolution: 1,
   autoResize: true,
   clearBeforeRender: true,
-  backgroundColor: 0xF3E642
+  backgroundColor: backgroundCol
 }
 var match = {
 	start: null,
@@ -72,7 +74,10 @@ function resetGame() {
 	GAME.Grid.createTiles();
 	GAME.Grid.clearGrid();
 	GAME.Grid.createGrid();
-	resize();
+	if(isMobile) resizeMobile();
+	else resizeDesktop();
+	//else resize();
+
 }
 
 function update() {
@@ -234,11 +239,11 @@ function inputMove(event) {
 					return;
 				}
 			}
-			if(isVertical) {
+			// if(isVertical) {
 
-			} else {
+			// } else {
 
-			}
+			// }
 		}
 	}
 	// console.log("INPUT MOVE: pageX--" + event.data.originalEvent.pageX + " pageY--" + event.data.originalEvent.pageY );
@@ -289,11 +294,11 @@ function touching(tile1, tile2) {
 function onKeyDown(key) {
 	// Left arrow is 37
  	if (key.keyCode === 37) {
-        desktopShift(false);
+
     }
     // Right arrow is 39
     if (key.keyCode === 39) {
-        desktopShift(true);
+
     }
 }
 
@@ -305,21 +310,6 @@ function showMenu() {
 	}
 }
 
-function desktopShift(shiftRight) {
-	if(shiftRight && GAME.Grid.gravDirection !== GAME.Grid.Direction.Right) {
-		if(GAME.Grid.gravDirection === GAME.Grid.Direction.Left) GAME.Grid.gravDirection = GAME.Grid.Direction.Down;
-		else if(GAME.Grid.gravDirection === GAME.Grid.Direction.Down) GAME.Grid.gravDirection = GAME.Grid.Direction.Right;
-	} else if(!shiftRight && GAME.Grid.gravDirection !== GAME.Grid.Direction.Left){
-		if(GAME.Grid.gravDirection === GAME.Grid.Direction.Right) GAME.Grid.gravDirection = GAME.Grid.Direction.Down;
-		else if(GAME.Grid.gravDirection === GAME.Grid.Direction.Down) GAME.Grid.gravDirection = GAME.Grid.Direction.Left;
-	} else {
-		return; //can't shift with keys
-	}
-
-	GAME.Grid.stopFalling();
-	resize();
-	GAME.Grid.checkGrav();
-}
 
 function rotateHorizontal() {
 	stage.rotation = 0;
@@ -334,18 +324,18 @@ function rotateVertical() {
 
 function resize() {
 	rotateHorizontal();
-	if(!gravSet) {
-		setGravity();
-		gravSet = true;
-	}
+	// if(!gravSet) {
+	// 	setGravity();
+	// 	gravSet = true;
+	// }
 
 	if(window.orientation === undefined) { //desktop only
 		resizeDesktop();
 	} else {  //mobile/small
 		if(!firstDraw) {
 			if(!resizeMobile()) return;
-		} else if(window.innerWidth < window.innerHeight && window.orientation !== undefined && GAME.Grid.gravDirection !== GAME.Grid.Direction.Down) {
-			return;
+		} else {
+			resizeMobile();
 		}
 	//	if(!resizeMobile()) return; //returns false on bail
 	}
@@ -407,71 +397,43 @@ function resizeMobile() {
 	w = window.innerWidth;
 	h = window.innerHeight;
 	renderer.resize(w, h);
-//BILLY bug is with 10.3 ios where it doesn't have consistant values for window.orientation and grid.gravDirection is pulled from that value too
-	if(window.innerWidth < window.innerHeight) { //vert //should this be by gravity?
-		if(window.orientation !== undefined && GAME.Grid.gravDirection !== GAME.Grid.Direction.Down) {
-			isTilting = true;
-			GAME.Grid.stopFalling();
-			renderer.render(stage);
-			firstDraw = true;
-			return false;
-		} //prevent double refresh
-		isVertical = true;
-		gridShifterW = 0;
-		GAME.Grid.gravDirection = GAME.Grid.Direction.Down;
-		GAME.Grid.beginDraw();
-		redraw(stage);
-		GAME.Grid.endDraw();
-		rotateVertical();
-		if(firstDraw) renderer.render(stage);
-	} else {
-		//horizontal
-		if(window.orientation !== undefined && (
-		(GAME.Grid.gravDirection === GAME.Grid.Direction.Down) ||
-		(GAME.Grid.gravDirection === GAME.Grid.Direction.Right && window.orientation === 90) || 
-		(GAME.Grid.gravDirection === GAME.Grid.Direction.Left && window.orientation === -90))) { //prevent double refresh 
-			isTilting = true;
-			GAME.Grid.stopFalling();
-			renderer.render(stage);
-			firstDraw = true;
-			return false;
-		}
-		isVertical = false; 
-		if(GAME.Grid.gravDirection === GAME.Grid.Direction.Right) gridShifterW = pixelFromPercentWidth(10);
-		else gridShifterW = 0;
-		redraw(stage);
-		if(window.pageYOffset > 0) {
-	 		renderer.view.style.top = window.pageYOffset + "px";
-		}
-	}
+	isVertical = true;
+	gridShifterW = 0;
+	GAME.Grid.gravDirection = GAME.Grid.Direction.Down;
+	GAME.Grid.beginDraw();
+	redraw(stage);
+	GAME.Grid.endDraw();
+	rotateVertical();
+	// if(firstDraw) renderer.render(stage);
+	renderer.render(stage);
 	firstDraw = true;
 	return true;
 }
 function orientationchange(event) {  //Mobile only
-	if(window.orientation === undefined) return;
-	var oldDirection = GAME.Grid.gravDirection;
-	setGravity();
-	GAME.Grid.stopFalling();
-	//if((oldDirection === GAME.Grid.Direction.Left && GAME.Grid.gravDirection === GAME.Grid.Direction.Right) ||
-	//	(oldDirection === GAME.Grid.Direction.Right && GAME.Grid.gravDirection === GAME.Grid.Direction.Left)) {	
-		resizeMobile(); 
-	//} //TODO: this is temp comment out to try resizing on event orientation change instead of resize
-	GAME.Grid.checkGrav();
+	// if(window.orientation === undefined) return;
+	// var oldDirection = GAME.Grid.gravDirection;
+	// //setGravity();
+	// //GAME.Grid.stopFalling();
+	// //if((oldDirection === GAME.Grid.Direction.Left && GAME.Grid.gravDirection === GAME.Grid.Direction.Right) ||
+	// //	(oldDirection === GAME.Grid.Direction.Right && GAME.Grid.gravDirection === GAME.Grid.Direction.Left)) {	
+	// 	resizeMobile(); 
+	// //} //TODO: this is temp comment out to try resizing on event orientation change instead of resize
+	// GAME.Grid.checkGrav();
 }
-function setGravity() {
-	switch(window.orientation) {
-		case 0:
-			GAME.Grid.gravDirection = GAME.Grid.Direction.Down;
-		break;
-		case -90:
-			GAME.Grid.gravDirection = GAME.Grid.Direction.Right;
-		break;
-		case 90:
-		default:
-			GAME.Grid.gravDirection = GAME.Grid.Direction.Left;
-		break;
-	}
-}
+// function setGravity() {
+// 	switch(window.orientation) {
+// 		case 0:
+// 			GAME.Grid.gravDirection = GAME.Grid.Direction.Down;
+// 		break;
+// 		case -90:
+// 			GAME.Grid.gravDirection = GAME.Grid.Direction.Right;
+// 		break;
+// 		case 90:
+// 		default:
+// 			GAME.Grid.gravDirection = GAME.Grid.Direction.Left;
+// 		break;
+// 	}
+// }
 
 
 
